@@ -6,14 +6,17 @@ if (typeof window !== "undefined") {
     gsap.registerPlugin(ScrollTrigger);
 }
 
-export const useGsap = (callback: (tl: gsap.core.Timeline) => void, deps: any[] = []) => {
-    const root = useRef<any>();
+export const useGsap = (
+    callback: (tl: gsap.core.Timeline) => void,
+    deps: React.DependencyList = []
+) => {
+    const root = useRef<HTMLDivElement | null>(null);
 
     useLayoutEffect(() => {
         const ctx = gsap.context(() => {
             const tl = gsap.timeline();
             callback(tl);
-        }, root.current);
+        }, root);
 
         return () => ctx.revert();
     }, [callback, ...deps]);
