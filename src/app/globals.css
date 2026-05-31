@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: var(--font-bodoni-moda);
+  --font-body: var(--font-hanken-grotesk);
+
+  /* Teara Design System Colors */
+  --color-primary: #163421;
+  --color-primary-container: #2d4b36;
+  --color-surface: #fcf9f8;
+  --color-surface-container: #f0eded;
+  --color-on-surface: #1c1b1b;
+  --color-on-surface-variant: #424842;
+  --color-outline: #727972;
+  --color-outline-variant: #c2c8c0;
+  --color-secondary: #57624a;
+  --color-secondary-container: #dbe7c8;
+
+  /* Spacing Scale */
+  --spacing-section-gap: 160px;
+  --spacing-section-gap-mobile: 80px;
+  --spacing-margin-desktop: 80px;
+  --spacing-margin-mobile: 24px;
+
+  --spacing-stack-sm: 8px;
+  --spacing-stack-md: 24px;
+  --spacing-stack-lg: 48px;
+
+  /* Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+}
+
+:root {
+  --background: var(--color-surface);
+  --foreground: var(--color-on-surface);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-headline);
+}
+
+/* Luxury Editorial Utils */
+.glassmorphism {
+  @apply backdrop-blur-[20px] bg-surface/80;
+}
+
+.editorial-grid {
+  @apply grid-cols-1 md:grid-cols-12 gap-6;
+}
+
+.bg-luxury {
+  background: radial-gradient(circle at top left, var(--color-primary-container), var(--color-primary));
+}
+
+.luxury-noise {
+  position: relative;
+}
+
+.luxury-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.15;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Perspective and Parallax Utils */
+.perspective-container {
+  perspective: 1000px;
+}
+
+.parallax-layer {
+  will-change: transform;
+}
+
+[data-scroll-reveal] {
+  opacity: 0;
+  transform: translateY(30px);
+}
