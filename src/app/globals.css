@@ -75,7 +75,7 @@ h6 {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+  background-image: url("/images/noise.svg");
   opacity: 0.15;
   pointer-events: none;
   mix-blend-mode: overlay;

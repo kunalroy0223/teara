@@ -25,7 +25,8 @@ export default function RootLayout({
       lang="en"
       className={`${bodoniModa.variable} ${hankenGrotesk.variable} h-full antialiased light`}
     >
-      <head>
+      <body className="min-h-full flex flex-col font-body bg-surface text-on-surface">
+        {children}
         {/* Google tag (gtag.js) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-W0JGQ19G6S"
@@ -40,9 +41,6 @@ export default function RootLayout({
             gtag('config', 'G-W0JGQ19G6S');
           `}
         </Script>
-      </head>
-      <body className="min-h-full flex flex-col font-body bg-surface text-on-surface">
-        {children}
       </body>
     </html>
   );
