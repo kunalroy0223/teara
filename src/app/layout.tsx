@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { bodoniModa, hankenGrotesk } from "@/lib/fonts";
 import "./globals.css";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Teara | Premium Himalayan Wellness & Skincare",
@@ -24,9 +25,26 @@ export default function RootLayout({
       lang="en"
       className={`${bodoniModa.variable} ${hankenGrotesk.variable} h-full antialiased light`}
     >
+      <head>
+        {/* Google tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-W0JGQ19G6S"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-W0JGQ19G6S');
+          `}
+        </Script>
+      </head>
       <body className="min-h-full flex flex-col font-body bg-surface text-on-surface">
         {children}
       </body>
     </html>
   );
 }
+
