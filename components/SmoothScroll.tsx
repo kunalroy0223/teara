@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function SmoothScroll() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, touchMultiplier: 1.4 });
+    const lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.82, touchMultiplier: 1.2 });
     (window as unknown as { lenis?: Lenis }).lenis = lenis;
     lenis.on('scroll', ScrollTrigger.update);
     const raf = (time: number) => lenis.raf(time * 1000);

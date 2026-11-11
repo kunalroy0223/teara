@@ -173,7 +173,7 @@ export function makeRanges() {
 // ---------------------------------------------------------------- terrain
 export function makeTerrain(mobile: boolean) {
   const W = 260, D = 240, cx = 0, cz = -20;
-  const seg = mobile ? 150 : 230;
+  const seg = mobile ? 128 : 190;
   const g = new THREE.PlaneGeometry(W, D, seg, seg);
   g.rotateX(-Math.PI / 2);
   const p = g.attributes.position as THREE.BufferAttribute;
@@ -211,7 +211,7 @@ export function makeTea(mobile: boolean) {
   const r = rng(11);
   const spacing = mobile ? 0.46 : 0.34;
   const pts: number[] = [];
-  const maxN = mobile ? 22000 : 60000;
+  const maxN = mobile ? 16000 : 42000;
   for (let x = -110; x < 110 && pts.length / 4 < maxN; x += spacing) {
     for (let z = -130; z < 90 && pts.length / 4 < maxN; z += spacing) {
       const jx = x + (r() - 0.5) * spacing * 0.5, jz = z + (r() - 0.5) * spacing * 0.5;
@@ -286,8 +286,8 @@ export function makeTrees(mobile: boolean) {
     mesh.castShadow = false;
     group.add(mesh);
   };
-  place(cone, mobile ? 700 : 1500, '#2A4732', (d, h, ty) => h > ty + 5 || d > 30, [0.55, 1.25]);
-  place(shade, mobile ? 70 : 140, '#5A7A4D', (d, h, ty) => d > 3 && d < 26 && h < ty + 8, [0.5, 0.75]);
+  place(cone, mobile ? 560 : 1200, '#2A4732', (d, h, ty) => h > ty + 5 || d > 30, [0.55, 1.25]);
+  place(shade, mobile ? 50 : 100, '#5A7A4D', (d, h, ty) => d > 3 && d < 26 && h < ty + 8, [0.5, 0.75]);
   return group;
 }
 
@@ -295,7 +295,7 @@ export function makeTrees(mobile: boolean) {
 export function makeMist(texture: THREE.Texture, mobile: boolean) {
   const r = rng(21);
   const group = new THREE.Group();
-  const n = mobile ? 26 : 44;
+  const n = mobile ? 18 : 30;
   for (let i = 0; i < n; i++) {
     const u = r();
     const p = track.getPointAt(u);
@@ -310,7 +310,7 @@ export function makeMist(texture: THREE.Texture, mobile: boolean) {
   }
   // a bank of mist where the line begins, so the train comes out of it
   const start = track.getPointAt(0.0);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 4; i++) {
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, color: '#F5F6EC', transparent: true, opacity: 0.55, depthWrite: false }));
     s.position.set(start.x - 4 + r() * 10, start.y + 0.5 + r() * 2, start.z + r() * 6);
     s.scale.set(16, 6, 1);

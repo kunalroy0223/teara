@@ -1,6 +1,18 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies
 node_modules/
+
+# Build outputs
 .next/
+.vercel/
 out/
-*.tsbuildinfo
-next-env.d.ts
-.DS_Store
+dist/
+build/
+coverage/
+
+# Logs
+*.log

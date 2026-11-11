@@ -6,27 +6,27 @@ import Rise from '@/components/Rise';
 export const metadata: Metadata = {
   title: 'About Us · Teara',
   description:
-    'Where Teara comes from, how a student idea became a company, and where it is incubated.',
+    'The story of Teara, from a question in the Darjeeling hills to a growing venture.',
 };
 
 const CHAPTERS = [
   {
     n: 'i.',
-    e: 'Where we are from',
-    h: 'Close to the gardens.',
-    t: 'We are four students at Inspiria Knowledge Campus in Siliguri, a short drive from the Darjeeling tea estates. Tea is the industry we see around us every day, so it was natural to start there.',
+    e: 'Where we began',
+    h: 'A familiar landscape.',
+    t: 'Darjeeling has always been shaped by tea. Its gardens, its people, its rhythm of life. Growing up around this landscape, we knew the journey from leaf to cup. But we began to wonder about the part of the story that remained untold.',
   },
   {
     n: 'ii.',
-    e: 'What we noticed',
-    h: 'Good leaf, very little use.',
-    t: 'Once tea is processed, the leaf that remains rarely goes anywhere useful. We wondered whether some of what makes tea leaves interesting could still be recovered from it.',
+    e: 'What remained',
+    h: 'A story left unfinished.',
+    t: 'After processing, much of the tea leaf was left behind. Its familiar purpose had been fulfilled, but we wondered if its story had ended there. Could something valuable still be found within it?',
   },
   {
     n: 'iii.',
-    e: 'Where our leaves come from',
-    h: 'Lopchu and Glenburn.',
-    t: 'Our leaves come from two Darjeeling estates, Lopchu Tea Estate and Glenburn Tea Estate. We work with leaf that is left after processing, so we use material that already exists instead of growing more.',
+    e: 'Where the leaves come from',
+    h: 'Rooted in Darjeeling.',
+    t: 'Our exploration brought us to Lopchu Tea Estate and Glenburn Tea Estate. We work with the leaves remaining after processing, looking at an existing resource through a different lens.',
   },
 ];
 
@@ -37,9 +37,11 @@ export default function About() {
 
       <section className="hero wrap" aria-labelledby="h-about">
         <div className="stack">
-          <p className="eyebrow">About Us</p>
-          <h1 id="h-about">It started with a pile of used tea leaves.</h1>
-          <p className="tag">And a simple question about where they go.</p>
+          <p className="eyebrow">The beginning</p>
+          <h1 id="h-about">A question hidden in the hills.</h1>
+          <p className="tag">
+            And a possibility waiting to be discovered.
+          </p>
         </div>
       </section>
 
@@ -59,93 +61,103 @@ export default function About() {
       <section className="section wrap" aria-labelledby="h-how">
         <div className="split">
           <div className="stack">
-            <p className="eyebrow">How Teara started</p>
-            <h2 id="h-how">From a student question to a company.</h2>
-            <p className="muted">Each step below happened in this order.</p>
+            <p className="eyebrow">The making of Teara</p>
+            <h2 id="h-how">
+              From a question in the hills to a growing venture.
+            </h2>
+            <p className="muted">
+              Each step below marks a part of our journey.
+            </p>
           </div>
 
           <Rise as="ol" className="timeline panel">
             <li>
-              <span className="when">The idea</span>
-              <h3>Chaicycle</h3>
+              <h3>The first question</h3>
               <p>
-                Ayan Sunuwar asked what happens to tea leaves after processing.
-                The first name for the idea was Chaicycle.
+                A question about what happens to tea leaves after processing
+                became the beginning of Chaicycle, the original identity of
+                what would later become Teara.
               </p>
             </li>
 
             <li>
-              <span className="when">Proof of concept</span>
-              <h3>A first extract</h3>
+              <h3>A new identity</h3>
               <p>
-                The team made a green tea leaf extract in oil form and tested
-                the idea in conversations with potential customers.
+                As the concept evolved, so did our vision. Chaicycle became
+                Teara, carrying the original question forward with a clearer
+                direction and a renewed sense of purpose.
               </p>
             </li>
 
             <li>
-              <span className="when">On stage</span>
-              <h3>Pitch competitions</h3>
+              <h3>The first experiment</h3>
               <p>
-                The idea won at local and national pitch competitions, and
-                placed in the Top 3 at Pitch Karo India 2026, out of more than
-                7,000 applications.
+                An oil based green tea leaf extract became our first proof of
+                concept. We took it into conversations with potential
+                customers, learning what the possibility could become.
               </p>
             </li>
 
             <li>
-              <span className="when">Incubation</span>
-              <h3>Two incubators</h3>
+              <h3>Taking the idea further</h3>
               <p>
-                Teara is incubated at AIC-SMUTBI and Inhub E-Cell,
-                supporting our journey from an early-stage idea toward
-                product development.
+                The idea found recognition at local and national pitch
+                competitions. In 2026, Teara secured a Top 3 position at
+                Pitch Karo India, selected from more than 7,000 applications.
               </p>
             </li>
 
             <li>
-              <span className="when">Recognition</span>
-              <h3>Top 20 startups in North East India</h3>
+              <h3>Growing beyond the beginning</h3>
               <p>
-                Teara was recognized as one of the Top 20 startups in North
-                East India under the AEGIS NE programme, under AIC-SMUTBI and
-                supported by NRL.
+                Teara joined AIC-SMUTBI and Inhub E-Cell as part of its
+                incubation journey. Along the way, we were selected among
+                the Top 20 startups from North East India under AEGIS NE,
+                an initiative supported by Numaligarh Refinery Limited
+                (NRL).
               </p>
             </li>
 
             <li className="now">
-              <span className="when">Now</span>
-              <h3>Research</h3>
+              <h3>The work continues</h3>
               <p>
-                Comparing extraction methods and working toward a stable
-                tea-extract facial serum.
+                What began as a question continues to shape our work. We
+                remain committed to exploring the possibilities of
+                Darjeeling&apos;s tea heritage and finding new meaning in
+                what the land already offers.
               </p>
             </li>
           </Rise>
         </div>
       </section>
 
-      <section className="section wrap" aria-labelledby="h-incubation">
+      <section
+        className="section wrap"
+        aria-labelledby="h-incubation"
+      >
         <div className="stack">
-          <p className="eyebrow">Incubation</p>
-          <h2 id="h-incubation">Supported by our ecosystem.</h2>
+          <p className="eyebrow">The people along the way.</p>
+          <h2 id="h-incubation">The ecosystems supporting our journey.</h2>
 
           <div className="incubators-grid">
             <Rise className="partner">
               <div className="incubator-card">
-                <img
-                  src="/brand/aic-smutbi.png"
-                  alt="AIC-SMUTBI logo"
-                  className="incubator-logo"
-                  width={260}
-                  height={260}
-                />
+                <div className="incubator-logo-wrap aic-logo-wrap">
+                  <img
+                    src="/brand/aic-smutbi.png"
+                    alt="AIC-SMUTBI logo"
+                    className="incubator-logo"
+                    width={260}
+                    height={260}
+                  />
+                </div>
 
                 <div className="stack-sm">
                   <h3>AIC-SMUTBI</h3>
                   <p>
-                    Teara is incubated at AIC-SMUTBI, which supports our
-                    entrepreneurial journey as we move from idea to product.
+                    An incubation ecosystem that has supported Teara&apos;s
+                    growth, providing an environment to learn, connect and
+                    take our early vision further.
                   </p>
                 </div>
               </div>
@@ -153,20 +165,22 @@ export default function About() {
 
             <Rise className="partner">
               <div className="incubator-card">
-                <img
-                  src="/brand/inhub.png"
-                  alt="Inhub Entrepreneurship Cell logo"
-                  className="incubator-logo"
-                  width={260}
-                  height={260}
-                />
+                <div className="incubator-logo-wrap inhub-logo-wrap">
+                  <img
+                    src="/brand/inhub.png"
+                    alt="Inhub Entrepreneurship Cell logo"
+                    className="incubator-logo"
+                    width={260}
+                    height={260}
+                  />
+                </div>
 
                 <div className="stack-sm">
-                  <h3>Inhub E-Cell</h3>
+                  <h3>Inhub Entrepreneurship Cell</h3>
                   <p>
-                    Inhub E-Cell supports our entrepreneurial
-                    journey, helping us develop our idea and build Teara from
-                    the ground up.
+                    An ecosystem that has been part of Teara&apos;s
+                    beginnings, supporting our efforts to turn an early
+                    question into a venture.
                   </p>
                 </div>
               </div>
@@ -178,7 +192,7 @@ export default function About() {
       <section className="section wrap">
         <Rise>
           <p className="quote">
-            Made here, from what is already <em>here.</em>
+            Made here, from what is <em> already here.</em>
           </p>
         </Rise>
       </section>

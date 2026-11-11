@@ -17,6 +17,8 @@ export type Shared = {
   prog: MutableRefObject<number>;
   ui: MutableRefObject<Record<string, HTMLElement | null>>;
   reduced: boolean;
+  invalidate: MutableRefObject<(() => void) | null>;
+  active: MutableRefObject<boolean>;
 };
 
 // What every part of the scene reads each frame, worked out once by the Director.
@@ -214,7 +216,11 @@ function Train({ st, env, url }: { st: MutableRefObject<State>; env: THREE.Textu
     const glow = new THREE.PointLight('#FFF1CC', 0, 2.2, 2);
     glow.position.set(0, 0.85, 0);
     w1.g.add(glow);
-    return { engine, model, wheels, w1, w2, bottle, glow, lamp };
+    return {
+      engine, model, wheels,
+      wagonWheels: [...w1.wheels, ...w2.wheels],
+      w1, w2, bottle, glow, lamp,
+    };
   }, [gltf, env]);
 
   useEffect(() => {
@@ -225,7 +231,7 @@ function Train({ st, env, url }: { st: MutableRefObject<State>; env: THREE.Textu
   // steam from the chimney
   const steam = useMemo(() => {
     const tex = softTexture('rgba(255,255,255,0.95)', 'rgba(255,255,255,0)', 128);
-    const pool = Array.from({ length: 90 }, () => {
+    const pool = Array.from({ length: 48 }, () => {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: '#EFF0EA', transparent: true, opacity: 0, depthWrite: false }));
       s.userData = { age: 9, life: 1, vel: new THREE.Vector3(), size: 0.2, spin: 0 };
       s.visible = false;
@@ -238,6 +244,7 @@ function Train({ st, env, url }: { st: MutableRefObject<State>; env: THREE.Textu
   const chimney = useMemo(() => new THREE.Vector3(0, 6.1, 7.15), []);
   const emitAt = useMemo(() => new THREE.Vector3(), []);
   const leafM = useMemo(() => ({ m: new THREE.Matrix4(), p: new THREE.Vector3(), q: new THREE.Quaternion(), s: new THREE.Vector3(), t: new THREE.Vector3() }), []);
+  const lastBottleK = useRef(0);
 
   useFrame((state, dt) => {
     const S = st.current;
@@ -246,7 +253,7 @@ function Train({ st, env, url }: { st: MutableRefObject<State>; env: THREE.Textu
     placeCar(parts.w2.g, S.s + W2, 0.42);
     // wheels turn with the distance travelled
     parts.wheels.forEach((w) => { w.rotation.x += S.ds / 0.1; });
-    [...parts.w1.wheels, ...parts.w2.wheels].forEach((w) => { w.rotation.x += S.ds / 0.085; });
+    parts.wagonWheels.forEach((w) => { w.rotation.x += S.ds / 0.085; });
     // a little rocking on the narrow gauge while moving
     parts.model.rotation.z = Math.sin(S.t * 9.0) * 0.004 * S.speed;
     parts.model.position.y = 0.498 + RAIL_TOP + Math.abs(Math.sin(S.t * 13)) * 0.003 * S.speed;
@@ -281,25 +288,30 @@ function Train({ st, env, url }: { st: MutableRefObject<State>; env: THREE.Textu
 
     // the leaf in the first wagon becomes the serum
     const k = smooth(BOTTLE[0], BOTTLE[1], S.p);
-    const cargo = parts.w1.cargo;
-    const N = cargo.count;
-    const L = leafM;
-    for (let i = 0; i < N; i++) {
-      const d = (i / N) * 0.55;
-      const tt = Math.min(1, Math.max(0, (k - d) / 0.45));
-      parts.w1.heap[i].decompose(L.p, L.q, L.s);
-      if (tt > 0) {
-        const e = tt * tt * (3 - 2 * tt);
-        const a = i * 2.4 + e * 7;
-        const rad = (1 - e) * 0.32;
-        L.t.set(Math.cos(a) * rad, 0.42 + e * 0.12 + Math.sin(e * Math.PI) * 0.3, Math.sin(a) * rad);
-        L.p.lerp(L.t, e);
-        L.s.multiplyScalar(1 - e);
+    // The cargo is static through most of the journey. Only rewrite its
+    // instance buffer when the leaf-to-serum transition actually progresses.
+    if (Math.abs(k - lastBottleK.current) > 0.0005) {
+      const cargo = parts.w1.cargo;
+      const N = cargo.count;
+      const L = leafM;
+      for (let i = 0; i < N; i++) {
+        const d = (i / N) * 0.55;
+        const tt = Math.min(1, Math.max(0, (k - d) / 0.45));
+        parts.w1.heap[i].decompose(L.p, L.q, L.s);
+        if (tt > 0) {
+          const e = tt * tt * (3 - 2 * tt);
+          const a = i * 2.4 + e * 7;
+          const rad = (1 - e) * 0.32;
+          L.t.set(Math.cos(a) * rad, 0.42 + e * 0.12 + Math.sin(e * Math.PI) * 0.3, Math.sin(a) * rad);
+          L.p.lerp(L.t, e);
+          L.s.multiplyScalar(1 - e);
+        }
+        L.m.compose(L.p, L.q, L.s);
+        cargo.setMatrixAt(i, L.m);
       }
-      L.m.compose(L.p, L.q, L.s);
-      cargo.setMatrixAt(i, L.m);
+      cargo.instanceMatrix.needsUpdate = true;
+      lastBottleK.current = k;
     }
-    cargo.instanceMatrix.needsUpdate = true;
     const b = smooth(0.4, 1, k);
     parts.bottle.scale.setScalar(Math.max(0.0001, b * 0.95));
     parts.bottle.position.y = 0.2 + b * 0.18;
@@ -337,19 +349,32 @@ function useModelUrl() {
 
 // ---------------------------------------------------------------- the camera and the story
 function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<State>; sun: MutableRefObject<THREE.DirectionalLight | null> }) {
-  const { camera, size } = useThree();
+  const { camera, size, invalidate } = useThree();
   const tmp = useMemo(() => ({
     eng: new THREE.Object3D(), start: track.getPointAt(0), pos: new THREE.Vector3(), look: new THREE.Vector3(),
     a: new THREE.Vector3(), b: new THREE.Vector3(), c: new THREE.Vector3(), d: new THREE.Vector3(),
     camPos: new THREE.Vector3(), camLook: new THREE.Vector3(), first: true, station: -2, ptr: { x: 0, y: 0, sx: 0, sy: 0 },
     right: new THREE.Vector3(), fwd: new THREE.Vector3(), up: new THREE.Vector3(),
+    stops: [] as HTMLElement[], past: [false, false, false, false], lastUiStation: -2,
   }), []);
 
   useEffect(() => {
-    const on = (e: PointerEvent) => { tmp.ptr.x = e.clientX / innerWidth * 2 - 1; tmp.ptr.y = e.clientY / innerHeight * 2 - 1; };
+    shared.invalidate.current = invalidate;
+    invalidate();
+    return () => {
+      if (shared.invalidate.current === invalidate) shared.invalidate.current = null;
+    };
+  }, [shared, invalidate]);
+
+  useEffect(() => {
+    const on = (e: PointerEvent) => {
+      tmp.ptr.x = e.clientX / innerWidth * 2 - 1;
+      tmp.ptr.y = e.clientY / innerHeight * 2 - 1;
+      if (shared.active.current) invalidate();
+    };
     addEventListener('pointermove', on, { passive: true });
     return () => removeEventListener('pointermove', on);
-  }, [tmp]);
+  }, [tmp, shared, invalidate]);
 
   const narrow = size.width < 760;
   const resolve = (v: V, out: THREE.Vector3, look = false) => {
@@ -364,14 +389,15 @@ function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<St
     const dt = Math.min(rawDt, 0.05);
     const S = st.current;
     const target = shared.prog.current;
-    S.p = shared.reduced || (window as unknown as { __tearaSnap?: boolean }).__tearaSnap ? target : THREE.MathUtils.damp(S.p, target, 2.4, dt);
-    if (Math.abs(S.p - target) < 1e-5) S.p = target;
+    // Lenis already smooths the document position. Do not damp the same
+    // progress a second time or the train and copy will visibly trail scroll.
+    S.p = target;
     const s = trainU(S.p) * TRACK_LEN;
     S.ds = s - S.s;
     S.s = s;
     S.t = state.clock.elapsedTime;
     const v = Math.abs(S.ds) / Math.max(dt, 1e-3);
-    S.speed = THREE.MathUtils.damp(S.speed, Math.min(1, v / 7), 4, dt);
+    S.speed = THREE.MathUtils.damp(S.speed, Math.min(1, v / 7), 3.2, dt);
 
     // the engine's frame, for camera offsets
     placeCar(tmp.eng, s, ENGINE_HALF);
@@ -382,7 +408,9 @@ function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<St
     let i = 0;
     while (i < KEYS.length - 2 && S.p > KEYS[i + 1].p) i++;
     const k0 = KEYS[i], k1 = KEYS[i + 1];
-    const f = smooth(k0.p, k1.p, S.p);
+    const shotT = Math.min(1, Math.max(0, (S.p - k0.p) / (k1.p - k0.p)));
+    // Quintic smootherstep gives each camera shot a softer start and landing.
+    const f = shotT * shotT * shotT * (shotT * (shotT * 6 - 15) + 10);
     resolve(k0.pos, tmp.a); resolve(k1.pos, tmp.b); tmp.pos.lerpVectors(tmp.a, tmp.b, f);
     resolve(k0.look, tmp.c, true); resolve(k1.look, tmp.d, true); tmp.look.lerpVectors(tmp.c, tmp.d, f);
     const fov = THREE.MathUtils.lerp(k0.fov ?? 36, k1.fov ?? 36, f) + (size.width < 760 ? 14 : 0);
@@ -400,12 +428,12 @@ function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<St
     if (tmp.pos.y < gh) tmp.pos.y = gh;
 
     if (tmp.first || shared.reduced || (window as unknown as { __tearaSnap?: boolean }).__tearaSnap) { tmp.camPos.copy(tmp.pos); tmp.camLook.copy(tmp.look); tmp.first = false; }
-    tmp.camPos.lerp(tmp.pos, 1 - Math.exp(-dt * 6));
-    tmp.camLook.lerp(tmp.look, 1 - Math.exp(-dt * 6));
+    tmp.camPos.lerp(tmp.pos, 1 - Math.exp(-dt * 8.5));
+    tmp.camLook.lerp(tmp.look, 1 - Math.exp(-dt * 8.5));
     camera.position.copy(tmp.camPos);
     camera.lookAt(tmp.camLook);
     const cam = camera as THREE.PerspectiveCamera;
-    if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = THREE.MathUtils.damp(cam.fov, fov, 4, dt); cam.updateProjectionMatrix(); }
+    if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = THREE.MathUtils.damp(cam.fov, fov, 6.5, dt); cam.updateProjectionMatrix(); }
 
     // the sun follows along so the train always has a crisp shadow
     const L = sun.current;
@@ -417,6 +445,7 @@ function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<St
 
     // words on screen
     const ui = shared.ui.current;
+    const here = stationAt(S.p);
     (Object.keys(SHOW) as (keyof typeof SHOW)[]).forEach((key) => {
       const el = ui[key];
       if (!el) return;
@@ -428,14 +457,31 @@ function Director({ shared, st, sun }: { shared: Shared; st: MutableRefObject<St
     });
     if (ui.map) ui.map.style.setProperty('--prog', String(Math.min(1, Math.max(0, (trainU(S.p) - 0.012) / (STATIONS[3].u - 0.012)))));
     if (ui.map) {
-      const here = stationAt(S.p);
-      ui.map.querySelectorAll('[data-i]').forEach((d) => d.classList.toggle('here', Number((d as HTMLElement).dataset.i) === here));
-      ui.map.querySelectorAll('[data-i]').forEach((d) => d.classList.toggle('past', trainU(S.p) >= STATIONS[Number((d as HTMLElement).dataset.i)].u - 0.001));
+      // Cache the four map stops once. Re-querying the DOM twice per frame
+      // creates avoidable work during a long scroll-linked animation.
+      if (tmp.stops.length === 0) tmp.stops = Array.from(ui.map.querySelectorAll<HTMLElement>('[data-i]'));
+      const route = trainU(S.p);
+      tmp.stops.forEach((stop, i) => {
+        if (here !== tmp.lastUiStation) stop.classList.toggle('here', i === here);
+        const past = route >= STATIONS[i].u - 0.001;
+        if (tmp.past[i] !== past) {
+          stop.classList.toggle('past', past);
+          tmp.past[i] = past;
+        }
+      });
+      if (here !== tmp.lastUiStation) tmp.lastUiStation = here;
+    }
+
+    // In demand mode, schedule another frame only while the camera/train are
+    // still settling. The low-rate idle pulse in Journey handles ambient motion.
+    if (shared.active.current) {
+      const cameraMoving = tmp.camPos.distanceToSquared(tmp.pos) > 1e-5 || tmp.camLook.distanceToSquared(tmp.look) > 1e-5;
+      const pointerMoving = Math.abs(P.sx - P.x) > 0.002 || Math.abs(P.sy - P.y) > 0.002;
+      if (cameraMoving || pointerMoving || S.speed > 0.006) invalidate();
     }
 
     // sound: chuffs follow the speed, a whistle on leaving and arriving
     sound.train(S.speed);
-    const here = stationAt(S.p);
     if (here !== tmp.station) {
       if (tmp.station !== -2 && Math.abs(S.p - target) < 0.2) sound.whistle(here === -1);
       tmp.station = here;
@@ -466,7 +512,7 @@ export default function Scene({ shared }: { shared: Shared }) {
     <>
       <hemisphereLight args={['#F2F3E4', '#4C6E4F', 1.15]} />
       <directionalLight ref={sun} color="#FFEFD2" intensity={2.6} castShadow
-        shadow-mapSize-width={mobile ? 1024 : 2048} shadow-mapSize-height={mobile ? 1024 : 2048}
+        shadow-mapSize-width={mobile ? 512 : 1024} shadow-mapSize-height={mobile ? 512 : 1024}
         shadow-camera-near={1} shadow-camera-far={80} shadow-bias={-0.0004} shadow-normalBias={0.02} />
       <Land mobile={mobile} />
       <Suspense fallback={null}>

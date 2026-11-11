@@ -17,12 +17,28 @@ import type { PageKey } from '@/lib/site';
 // the 3D scene loads after the words, so the first screen appears at once
 const Scene = dynamic(() => import('./Scene'), { ssr: false });
 
+
 const COPY: { h: string; t: string; link?: [PageKey, string] }[] = [
-  { h: 'We grew up with these tea gardens.', t: 'For anyone from the hills around Siliguri, Darjeeling tea is part of daily life. It is work for thousands of families and a name known around the world. We wanted to build something from here, using what is already here.' },
-  { h: 'Not every leaf ends up in a cup.', t: 'Processing tea leaves a lot of leaf behind. Some of it goes to low-value uses and some is simply thrown away, even though it comes from the same carefully grown plants.' },
-  { h: 'We are doing the slow part properly.', t: 'Right now we are comparing ways to extract useful material from the leaf, and learning how to keep that extract stable. We would rather take the time than rush a product out.', link: ['from-leaf', 'See the process'] },
-  { h: 'A serum, still being made.', t: 'Our first product will be a facial serum built around an extract of Darjeeling tea leaves. It does not exist yet. You can follow along and tell us what you would want from it.', link: ['serum', 'About the serum'] },
+  {
+    h: 'Some places never leave you.',
+    t: 'In the mist that settles over the gardens, in the first light touching the slopes, and in the hands that have tended them for generations. The hills carry stories of their own, woven into the lives and memories of those who call them home.',
+  },
+  {
+    h: 'Not every story reaches the cup.',
+    t: 'When the harvest has passed, much of the leaf is left behind. Some finds little purpose, some simply fades from sight. Yet it comes from the same carefully nurtured gardens, holding possibilities still waiting to be discovered.',
+  },
+  {
+    h: 'The best things reveal themselves slowly.',
+    t: 'Some discoveries ask for patience. We are exploring what these Darjeeling tea leaves hold, comparing extraction methods and studying how to preserve their useful compounds. There is no need to hurry what deserves to be understood.',
+    link: ['from-leaf', 'Follow the process'],
+  },
+  {
+    h: 'Something meaningful is taking shape.',
+    t: 'A first expression is beginning to emerge: a facial serum built around Darjeeling tea leaf extracts. Still in research, its story is far from finished. Because what it becomes should be shaped by more than what nature offers.',
+    link: ['serum', 'Discover the serum'],
+  },
 ];
+
 // scroll positions (0 to 1) where each station is centred, for the route map
 const STOP_AT = [0.222, 0.397, 0.595, 0.79];
 
@@ -46,10 +62,12 @@ export default function Journey() {
   const section = useRef<HTMLElement>(null);
   const prog = useRef(0);
   const ui = useRef<Record<string, HTMLElement | null>>({});
+  const invalidate = useRef<(() => void) | null>(null);
+  const active = useRef(true);
   const [gl, setGl] = useState<boolean | null>(null);
   const [live, setLive] = useState(true);
   const [reduced, setReduced] = useState(false);
-  const shared = useRef<Shared>({ prog, ui, reduced: false });
+  const shared = useRef<Shared>({ prog, ui, reduced: false, invalidate, active });
 
   useEffect(() => {
     setGl(webglOK());
@@ -60,22 +78,40 @@ export default function Journey() {
 
   useEffect(() => {
     if (!gl || !section.current) return;
+    active.current = true;
     const trig = ScrollTrigger.create({
       trigger: section.current, start: 'top top', end: 'bottom bottom',
-      onUpdate: (self) => { prog.current = self.progress; },
+      onUpdate: (self) => {
+        prog.current = self.progress;
+        if (active.current) invalidate.current?.();
+      },
     });
     prog.current = trig.progress;
-    const io = new IntersectionObserver(([e]) => { setLive(e.isIntersecting); sound.engine(e.isIntersecting); }, { rootMargin: '10% 0px' });
+    const io = new IntersectionObserver(([e]) => {
+      active.current = e.isIntersecting;
+      setLive(e.isIntersecting);
+      sound.engine(e.isIntersecting);
+      if (e.isIntersecting) invalidate.current?.();
+    }, { rootMargin: '10% 0px' });
     io.observe(section.current);
-    return () => { trig.kill(); io.disconnect(); sound.engine(false); };
+    return () => { trig.kill(); io.disconnect(); active.current = false; sound.engine(false); };
   }, [gl]);
+
+  // Keep the ambient scene alive at a modest frame rate while it is visible.
+  // During scrolling, ScrollTrigger invalidates the canvas on every Lenis tick.
+  // This avoids rendering the full 3D world at 60+ FPS while the page is idle.
+  useEffect(() => {
+    if (!gl || !live) return;
+    const id = window.setInterval(() => invalidate.current?.(), 1000 / 24);
+    return () => window.clearInterval(id);
+  }, [gl, live]);
 
   const goTo = (p: number) => {
     const el = section.current;
     if (!el) return;
     const y = el.offsetTop + p * (el.offsetHeight - innerHeight);
     const lenis = (window as unknown as { lenis?: { scrollTo: (y: number, o: object) => void } }).lenis;
-    if (lenis) lenis.scrollTo(y, { duration: 2.6 }); else scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+    if (lenis) lenis.scrollTo(y, { duration: 3.0 }); else scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
   };
 
   const set = (k: string) => (el: HTMLElement | null) => { ui.current[k] = el; };
@@ -86,7 +122,7 @@ export default function Journey() {
       <section className="journey-flat wrap" aria-label="The Teara journey, in four stations">
         <div className="hero"><Hero /></div>
         {COPY.map((c, i) => <Card key={i} i={i} c={c} />)}
-        <p className="quote">Give the leftover leaf a <em>second life.</em></p>
+        <p className="quote">Give the leftover leaf a<em>second life.</em></p>
       </section>
     );
   }
@@ -95,7 +131,7 @@ export default function Journey() {
     <section className="journey" ref={section} aria-label="The Teara journey, in four stations">
       <div className="j-stage">
         {gl && (
-          <Canvas className="j-canvas" shadows="soft" dpr={[1, 1.75]} frameloop={live ? 'always' : 'never'}
+          <Canvas className="j-canvas" shadows="soft" dpr={[1, 1.35]} frameloop="demand"
             gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.02 }}
             camera={{ fov: 38, near: 0.05, far: 2000, position: [0, 20, 40] }} aria-hidden="true">
             <Scene shared={shared.current} />
@@ -107,11 +143,11 @@ export default function Journey() {
           {COPY.map((c, i) => (
             <div className={`j-card j-card-${i}`} key={i} ref={set(`st${i}`)}><Card i={i} c={c} /></div>
           ))}
-          <p className="j-quote quote" ref={set('quote')}>Give the leftover leaf a <em>second life.</em></p>
+          <p className="j-quote quote" ref={set('quote')}>The leaves had another <em>story to tell.</em></p>
           <div className="j-outro" ref={set('outro')}>
-            <p className="eyebrow">End of the line, for now</p>
+            <p className="eyebrow">Where every creation begins with understanding.</p>
             <p className="j-outro-t">Made <em>for you.</em></p>
-            <p className="j-outro-s">From Darjeeling, from leaf that was left behind.</p>
+            <p className="j-outro-s">From the heart of Darjeeling.</p>
           </div>
         </div>
         <nav className="j-map" ref={set('map') as (el: HTMLElement | null) => void} aria-label="Stations">
@@ -129,15 +165,19 @@ export default function Journey() {
   );
 }
 
+
 function Hero() {
   return (
     <div className="stack">
-      <p className="eyebrow">Darjeeling tea, a second life</p>
-      <h1>Some leaves have more to give.</h1>
-      <p className="lede">Teara takes tea leaf left over after processing in Darjeeling and turns it into skincare. We are a young company from Siliguri, and our first serum is in research now.</p>
+      <p className="eyebrow">Darjeeling · Beyond the familiar</p>
+      <h1>The mountains have stories yet untold.</h1>
+      <p className="lede">
+        Every season, Darjeeling sends its tea into the world. Yet beyond the familiar journey from leaf to cup, another chapter waits in what remains. We began looking closer, curious about what the leaves might still hold.
+      </p>
     </div>
   );
 }
+
 
 function Card({ i, c }: { i: number; c: (typeof COPY)[number] }) {
   return (

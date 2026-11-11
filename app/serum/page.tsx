@@ -57,19 +57,75 @@ export default function Serum() {
             <p className="eyebrow">Early list</p>
             <h2 id="h-help">Help us shape it.</h2>
             <p>Tell us about your skin and what you want from a serum. Every answer goes into how we design it.</p>
-            <PreviewForm done="Thank you. This preview cannot send answers yet. On the live site they will reach the team, and we will only write when there is real news.">
-              <div className="field"><label htmlFor="s-name">Your name</label><input id="s-name" name="name" type="text" autoComplete="name" placeholder="Pema" /></div>
-              <div className="field"><label htmlFor="s-email">Email</label><input id="s-email" name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></div>
-              <fieldset>
-                <legend>My skin usually feels</legend>
-                {SKIN.map(([v, l]) => (
-                  <label className="chip" key={v}><input type="radio" name="skin" value={v} /><span>{l}</span></label>
-                ))}
-              </fieldset>
-              <div className="field"><label htmlFor="s-want">What do you want from a serum?</label><textarea id="s-want" name="want" placeholder="Something light I can wear under sunscreen in the humid months." /></div>
-              <label className="check"><input type="checkbox" name="news" defaultChecked /> Write to me when there is real news about the serum.</label>
-              <p><button className="btn" type="submit">Join the early list <Arrow /></button></p>
-            </PreviewForm>
+
+              <PreviewForm
+                subject="New Teara Serum Early Access Enquiry"
+                done="Thank you for your interest in Teara. Your response has been received. We'll write to you when there's meaningful news about the serum."
+              >
+                <div className="field">
+                  <label htmlFor="s-name">Your name</label>
+                  <input
+                    id="s-name"
+                    name="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Keren"
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="s-email">Email</label>
+                  <input
+                    id="s-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="you@example.com"
+                  />
+                </div>
+
+                <fieldset>
+                  <legend>My skin usually feels</legend>
+                  {SKIN.map(([v, l]) => (
+                    <label className="chip" key={v}>
+                      <input
+                        type="radio"
+                        name="skin"
+                        value={v}
+                      />
+                      <span>{l}</span>
+                    </label>
+                  ))}
+                </fieldset>
+
+                <div className="field">
+                  <label htmlFor="s-want">
+                    What do you want from a serum?
+                  </label>
+                  <textarea
+                    id="s-want"
+                    name="want"
+                    placeholder="Something light I can wear under sunscreen in the humid months."
+                  />
+                </div>
+
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    name="news"
+                    value="Yes"
+                  />
+                  Write to me when there is real news about the serum.
+                </label>
+
+                <p>
+                  <button className="btn" type="submit">
+                    Join the early list <Arrow />
+                  </button>
+                </p>
+              </PreviewForm>
+
           </div>
         </div>
       </section>

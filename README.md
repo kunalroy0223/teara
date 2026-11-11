@@ -54,3 +54,8 @@ Train model: "Darjeeling Class B locomotives"
 by drelephantes (https://sketchfab.com/smsouvikmondal425), licensed under
 CC BY 4.0 (http://creativecommons.org/licenses/by/4.0/). Simplified for the
 web. This credit must stay on the site; it is in the footer.
+
+
+## Motion profile
+
+This package uses a restrained cinematic scroll profile: Lenis `lerp: 0.085`, a slightly reduced wheel multiplier, quintic camera-key easing, and a more gradual camera/FOV settle. Lenis is the only document-scroll interpolation layer; the camera has a modest follow response so it feels composed rather than mechanically locked to the scroll input.

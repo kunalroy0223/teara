@@ -16,16 +16,16 @@ const TEAM = [
     name: 'Ayan Sunuwar',
     role: 'Founder',
     description:
-      'Leads the vision and overall direction of Teara, bringing the founding idea to life.',
+      'The originator of the founding idea, shaping its vision and purpose while defining the direction and principles on which the venture is built.',
     photo: '/pfp/ayan.png',
     linkedin: 'https://www.linkedin.com/in/ayan-sunuwar/',
     email: 'founder@teara.in',
   },
   {
     name: 'Kunal Roy',
-    role: 'Co-founder',
+    role: 'Co-founder & CEO',
     description:
-      'Drives business strategy, organisational growth and creative direction, shaping the brand identity.',
+      'At the intersection of vision, strategy and execution, bringing together people, ideas and opportunities while shaping the venture toward sustainable growth and long-term impact.',
     photo: '/pfp/kunal.png',
     linkedin: 'https://www.linkedin.com/in/kunal-roy-/',
     email: 'ceo@teara.in',
@@ -34,16 +34,16 @@ const TEAM = [
     name: 'Tanmoy Saha',
     role: 'Chief Operating Officer',
     description:
-      'Oversees operations and execution, turning ideas into action and ensuring smooth coordination.',
+      'At the core of operational planning and execution, translating organisational priorities into structured processes while keeping teams aligned and work moving forward.',
     photo: '/pfp/tanmoy.png',
     linkedin: 'https://www.linkedin.com/in/tanmoy-saha-developer/',
     email: 'coo@teara.in',
   },
   {
     name: 'Tanisha Chowdhury',
-    role: "Founder's Office Associate",
+    role: "Founder's Associate",
     description:
-      'Supports strategic initiatives, cross-functional coordination and execution.',
+      'Bridging strategy and execution, coordinating cross-functional initiatives and keeping key priorities on track.',
     photo: '/pfp/tanisha.png',
     linkedin: 'https://www.linkedin.com/in/tanisha-chowdhury26/',
     email: 'associate@teara.in',
@@ -81,11 +81,10 @@ export default function People() {
 
       <section className="hero wrap" aria-labelledby="h-people">
         <div className="stack">
-          <p className="eyebrow">People</p>
-          <h1 id="h-people">The people making Teara.</h1>
+          <p className="eyebrow">Our team</p>
+          <h1 id="h-people">A journey shaped by shared belief.</h1>
           <p className="lede">
-            Four students from Inspiria Knowledge Campus in Siliguri, and two
-            mentors who guide the work.
+            What began with a common conviction has grown into a collective effort. Through every challenge, conversation and milestone, we continue to work towards a purpose that brings us together, with the encouragement and guidance of our mentors.
           </p>
         </div>
       </section>
@@ -93,8 +92,8 @@ export default function People() {
       {/* Founding team */}
       <section className="section wrap" aria-labelledby="h-team">
         <div className="stack">
-          <p className="eyebrow">The team</p>
-          <h2 id="h-team">Founding Team</h2>
+          <p className="eyebrow">The Minds Behind</p>
+          <h2 id="h-team">The Vision</h2>
 
           <Rise className="team">
             {TEAM.map((person) => (
@@ -136,7 +135,7 @@ export default function People() {
       {/* Mentors */}
       <section className="section wrap" aria-labelledby="h-mentors">
         <div className="stack">
-          <p className="eyebrow">Guidance</p>
+          <p className="eyebrow">Guided By Experience</p>
           <h2 id="h-mentors">Our mentors.</h2>
 
           <Rise className="partner">
@@ -213,7 +212,8 @@ export default function People() {
             <h2 id="h-contact">Write to the team.</h2>
 
             <PreviewForm
-              done={`Thank you. This preview cannot send messages yet. On the live site your message will go to ${CONTACT.email}.`}
+              subject="New Teara website contact enquiry"
+              done="Thank you for writing to Teara. Your message has been delivered to our team. We will be in touch."
             >
               <div className="field">
                 <label htmlFor="c-name">Your name</label>
@@ -222,6 +222,8 @@ export default function People() {
                   name="name"
                   type="text"
                   autoComplete="name"
+                  required
+                  minLength={2}
                 />
               </div>
 
@@ -241,7 +243,12 @@ export default function People() {
 
                 {WHO.map(([value, label]) => (
                   <label className="chip" key={value}>
-                    <input type="radio" name="who" value={value} />
+                    <input
+                      type="radio"
+                      name="who"
+                      value={value}
+                      required={value === 'estate'}
+                    />
                     <span>{label}</span>
                   </label>
                 ))}
@@ -249,7 +256,13 @@ export default function People() {
 
               <div className="field">
                 <label htmlFor="c-msg">Message</label>
-                <textarea id="c-msg" name="message" />
+                <textarea
+                  id="c-msg"
+                  name="message"
+                  required
+                  minLength={10}
+                  maxLength={3000}
+                />
               </div>
 
               <p>
